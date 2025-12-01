@@ -1,0 +1,70 @@
+name: project-ci
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        description: Python version to use for all jobs.
+        type: string
+        default: "3.11"
+      run-bandit:
+        description: Set to false to skip Bandit security scanning.
+        type: boolean
+        default: true
+      package-name:
+        description: Python package name used for version discovery.
+        type: string
+        default: ""
+      publish-on:
+        description: Git ref (branch or tag prefix) required for automated publishing.
+        type: string
+        default: ""
+      badge-commit-message:
+        description: Commit message to use when badge assets change.
+        type: string
+        default: "chore: update workflow badges"
+      environment-name:
+        description: GitHub Environment to use for publishing (e.g. 'pypi').
+        type: string
+        default: "pypi"
+    secrets:
+      pypi-token:
+        description: PyPI token for publishing (optional if using OIDC).
+        required: false
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  pipeline:
+    uses: ./.github/workflows/ci-python.yml
+    with:
+      python-version: ${{ inputs.python-version }}
+      run-bandit: ${{ inputs.run-bandit }}
+      package-name: ${{ inputs.package-name }}
+      publish-on: ${{ inputs.publish-on }}
+      badge-commit-message: ${{ inputs.badge-commit-message }}
+    secrets:
+      pypi-token: ${{ secrets.pypi-token }}
+
+  publish:
+    needs: pipeline
+    if: needs.pipeline.outputs.should_publish == 'true'
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment-name }}
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Download distribution artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.pipeline.outputs.dist_artifact }}
+          path: dist
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/
+          password: ${{ secrets.pypi-token }}
