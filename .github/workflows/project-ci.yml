@@ -16,7 +16,8 @@ on:
         type: string
         default: ""
       publish-on:
-        description: Git ref (branch or tag prefix) required for automated publishing.
+        description: Git ref (branch or tag prefix) required for automated publishing. Leave
+          empty to allow publishing from any push that contains a version bump.
         type: string
         default: ""
       badge-commit-message:
