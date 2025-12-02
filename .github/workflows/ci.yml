@@ -8,10 +8,10 @@ permissions:
 
 jobs:
   ci:
-    uses: ./.github/workflows/project-ci.yml
+    uses: k4144/actions/project-ci/.github/workflows/project-ci.yml
     with:
       python-version: "3.11"
-      package-name: "coron"
+      package-name: "actions"
       publish-on: "main"
     secrets:
       pypi-token: ${{ secrets.PYPI_TOKEN }}
