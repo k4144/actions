@@ -1,4 +1,5 @@
-Usage: black [OPTIONS] SRC ...
-Try 'black -h' for help.
+would reformat /home/runner/work/actions/actions/src/actions/__init_.py
+would reformat /home/runner/work/actions/actions/src/actions/main.py
 
-Error: Invalid value for 'SRC ...': Path 'src' does not exist.
+Oh no! 💥 💔 💥
+2 files would be reformatted.
