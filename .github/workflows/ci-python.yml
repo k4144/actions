@@ -210,6 +210,7 @@ jobs:
         with:
           python-version: ${{ inputs.python-version }}
 
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -292,7 +293,7 @@ jobs:
         run: |
           mkdir -p reports
           set +e
-          bandit -r src -f json -o reports/bandit.json -x "**/_version.py"
+          bandit -r src -c pyproject.toml -f json -o reports/bandit.json -x "**/_version.py"
           status=$?
           set -e
           if [ "$status" -eq 0 ]; then
@@ -308,12 +309,20 @@ jobs:
           mkdir -p reports
           echo '{"results": [], "metrics": {"_totals": {"SEVERITY.HIGH": 0, "SEVERITY.MEDIUM": 0, "SEVERITY.LOW": 0}}}' > reports/bandit.json
 
-      - name: Build documentation
+      - name: Build Documentation
         id: docs_build
         continue-on-error: true
+        # Guard 1: Only run if docs/conf.py exists
+        if: hashFiles('docs/conf.py') != ''
         run: |
           mkdir -p reports
-          make -C docs html > reports/docs.log 2>&1
+          # Guard 2: Install dependencies (including optional docs group)
+          # Assuming you use 'uv', otherwise use 'pip install .[dev]'
+          pip install .[dev]
+          
+          # Guard 3: Build with -W to turn warnings into errors
+          # This ensures you catch broken links or formatting issues in CI
+          sphinx-build -M html docs docs/_build -W > reports/docs.log 2>&1
 
       - name: Record Black status
         id: black_status
@@ -379,6 +388,8 @@ jobs:
           status="${{ steps.docs_build.outcome }}"
           if [ "$status" = "success" ]; then
             badge_value="passing"
+          elif [ "$status" = "skipped" ]; then
+            badge_value="skipped"
           else
             badge_value="failing"
             echo "::warning::Documentation build failed. See reports/docs.log"
@@ -475,7 +486,7 @@ jobs:
              [[ "$TESTS_STATUS" == "passing" ]] && \
              [[ "$BLACK_STATUS" == "passing" ]] && \
              [[ "$RUFF_STATUS" == "passing" ]] && \
-             [[ "$DOCS_STATUS" == "passing" ]] && \
+             ([[ "$DOCS_STATUS" == "passing" ]] || [[ "$DOCS_STATUS" == "skipped" ]]) && \
              ([[ "$BANDIT_STATUS" == "passing" ]] || [[ "$BANDIT_STATUS" == "skipped" ]]); then
 
             ref_ok=true
