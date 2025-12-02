@@ -10,6 +10,9 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "black>=25.11.0",
     "pytest>=9.0.1",
     "pytest-coverage>=0.0",
+    "ruff>=0.14.7",
+    "sphinx>=9.0.1",
 ]
