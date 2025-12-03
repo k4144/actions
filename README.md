@@ -1,5 +1,5 @@
 [![License](https://img.shields.io/github/license/k4144/actions)](https://github.com/k4144/actions/blob/main/LICENSE)
-[![CI](https://github.com/k4144/actions/workflows/project-ci.yml/badge.svg)](https://github.com/k4144/actions/workflows/project-ci.yml)
+[![CI](https://github.com/k4144/actions/workflows/ci.yml/badge.svg)](https://github.com/k4144/actions/workflows/ci.yml)
 [![Tests](./badges/tests.svg)](https://docs.pytest.org/en/stable/)
 [![Coverage](./badges/coverage.svg)](https://docs.pytest.org/en/stable/)
 [![Bandit](./badges/bandit.svg)](https://bandit.readthedocs.io/en/latest/)
@@ -48,6 +48,7 @@ jobs:
       package-name: "your_package_name"
       # publish-on: "main" # Optional: Define branch for publishing
     secrets:
+      pypi-token: None
       #pypi-token: ${{ secrets.PYPI_TOKEN }}
   publish:
     needs: ci
