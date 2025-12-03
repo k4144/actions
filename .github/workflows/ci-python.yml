@@ -134,21 +134,68 @@ jobs:
               raise SystemExit("Unable to determine current project version.")
 
           def read_previous_version() -> str:
+              # Strategy 1: Try to find the latest tag
               try:
                   tag = (
                       subprocess.check_output(
                           ["git", "describe", "--tags", "--abbrev=0"],
                           text=True,
+                          stderr=subprocess.DEVNULL,
                       )
                       .strip()
                   )
+                  match = re.fullmatch(r"v?(?P<ver>\d+\.\d+\.\d+)", tag)
+                  if match:
+                      return match.group("ver")
               except subprocess.CalledProcessError:
-                  return "0.0.0"
+                  pass
 
-              # Accept tags that optionally start with a leading "v".
-              match = re.fullmatch(r"v?(?P<ver>\d+\.\d+\.\d+)", tag)
-              if match:
-                  return match.group("ver")
+              # Strategy 2: Check version in previous commit (HEAD^)
+              # We reuse the logic from read_current_version but read from git show
+              def get_file_content_at_head_minus_1(filename: str) -> str | None:
+                  try:
+                      return subprocess.check_output(
+                          ["git", "show", f"HEAD^:{filename}"],
+                          text=True,
+                          stderr=subprocess.DEVNULL,
+                      )
+                  except subprocess.CalledProcessError:
+                      return None
+
+              # Check pyproject.toml in previous commit
+              pyproject_text = get_file_content_at_head_minus_1("pyproject.toml")
+              if pyproject_text:
+                  match = re.search(r"(?m)^\s*version\s*=\s*['\"]([^'\"]+)['\"]", pyproject_text)
+                  if match:
+                      return match.group(1).strip()
+                  match = re.search(
+                      r"(?m)^\s*\[metadata\][\s\S]*?^\s*version\s*=\s*['\"]([^'\"]+)['\"]",
+                      pyproject_text,
+                  )
+                  if match:
+                      return match.group(1).strip()
+
+              # Check _version.py files in previous commit
+              # We need to find where they are. We can use the same candidate list logic
+              # but we need to know the paths relative to root.
+              package_name = os.environ.get("PACKAGE_NAME", "").strip()
+              candidates = []
+              if package_name:
+                  package_path = Path("src").joinpath(*package_name.split("."))
+                  candidates.append(str(package_path / "_version.py"))
+              
+              # Also look for any _version.py that exists currently, check its previous state
+              for path in sorted(Path("src").glob("*/_version.py")):
+                  if str(path) not in candidates:
+                      candidates.append(str(path))
+
+              for version_file in candidates:
+                  text = get_file_content_at_head_minus_1(version_file)
+                  if text:
+                      match = re.search(r"__version__\s*=\s*['\"]([^'\"]+)['\"]", text)
+                      if match:
+                          return match.group(1).strip()
+
               return "0.0.0"
 
           def compare_versions(current: str, previous: str) -> tuple[str, bool]:
