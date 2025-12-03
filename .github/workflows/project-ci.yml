@@ -24,14 +24,13 @@ on:
         description: Commit message to use when badge assets change.
         type: string
         default: "chore: update workflow badges"
-      environment-name:
-        description: GitHub Environment to use for publishing (e.g. 'pypi').
-        type: string
-        default: "pypi"
-    secrets:
-      pypi-token:
-        description: PyPI token for publishing (optional if using OIDC).
-        required: false
+    outputs:
+      should_publish:
+        description: Whether all release checks passed and publishing is allowed.
+        value: ${{ jobs.pipeline.outputs.should_publish }}
+      dist_artifact:
+        description: Name of the uploaded distribution artifact when a publish is triggered.
+        value: ${{ jobs.pipeline.outputs.dist_artifact }}
 
 permissions:
   contents: write
@@ -44,28 +43,6 @@ jobs:
       python-version: ${{ inputs.python-version }}
       run-bandit: ${{ inputs.run-bandit }}
       package-name: ${{ inputs.package-name }}
-      publish-on: ${{ inputs.publish-on }}
       badge-commit-message: ${{ inputs.badge-commit-message }}
     secrets:
       pypi-token: ${{ secrets.pypi-token }}
-
-  publish:
-    needs: pipeline
-    if: needs.pipeline.outputs.should_publish == 'true'
-    runs-on: ubuntu-latest
-    environment: ${{ inputs.environment-name }}
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-      - name: Download distribution artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ needs.pipeline.outputs.dist_artifact }}
-          path: dist
-
-      - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          packages-dir: dist/
-          password: ${{ secrets.pypi-token }}
