@@ -47,6 +47,7 @@ jobs:
       python-version: ${{ inputs.python-version }}
       run-bandit: ${{ inputs.run-bandit }}
       package-name: ${{ inputs.package-name }}
+      publish-on: ${{ inputs.publish-on }}
       badge-commit-message: ${{ inputs.badge-commit-message }}
     secrets:
       pypi-token: ${{ secrets.pypi-token }}

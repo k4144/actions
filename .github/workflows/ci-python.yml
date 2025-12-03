@@ -340,9 +340,33 @@ jobs:
         run: |
           mkdir -p reports
           set +e
-          bandit -r src -c pyproject.toml -f json -o reports/bandit.json -x "**/_version.py"
+          bandit -r src -c pyproject.toml -f json -o reports/bandit.json -x "**/_version.py" || true
+          
+          # Check for High severity issues
+          python <<'PY'
+          import json
+          import os
+          import sys
+          
+          try:
+              with open("reports/bandit.json", "r") as f:
+                  data = json.load(f)
+              
+              totals = data.get("metrics", {}).get("_totals", {})
+              high_severity = int(totals.get("SEVERITY.HIGH", 0))
+              
+              if high_severity > 0:
+                  print(f"::error::Bandit found {high_severity} HIGH severity issues.")
+                  sys.exit(1)
+              else:
+                  print("Bandit check passed (no High severity issues).")
+                  sys.exit(0)
+          except Exception as e:
+              print(f"::error::Failed to parse Bandit report: {e}")
+              sys.exit(1)
+          PY
+          
           status=$?
-          set -e
           if [ "$status" -eq 0 ]; then
             echo "status=passing" >> "$GITHUB_OUTPUT"
           else
