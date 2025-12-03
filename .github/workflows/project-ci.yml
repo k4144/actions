@@ -31,6 +31,10 @@ on:
       dist_artifact:
         description: Name of the uploaded distribution artifact when a publish is triggered.
         value: ${{ jobs.pipeline.outputs.dist_artifact }}
+    secrets:
+      pypi-token:
+        description: PyPI token for checking version existence (optional).
+        required: false
 
 permissions:
   contents: write

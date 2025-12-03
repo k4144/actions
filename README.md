@@ -22,7 +22,8 @@ The `project-ci` workflow is a comprehensive pipeline for Python packages. It ha
 - **Security Checks**: Scans for vulnerabilities using `bandit`.
 - **Documentation**: Builds documentation using `sphinx`.
 - **Badges**: Automatically generates and updates status badges for tests, coverage, and linting results.
-- **Publishing**: Automates publishing to PyPI when a new version is detected (optional).
+
+- **Publishing**: the pypi publishing step has been moved into ci.yml because pypi does not support publishing from reusable workflows. this step is optional and can be disabled by removing the `publish-on` input.
 
 ## Usage
 
@@ -47,5 +48,24 @@ jobs:
       package-name: "your_package_name"
       # publish-on: "main" # Optional: Define branch for publishing
     secrets:
-      pypi-token: ${{ secrets.PYPI_TOKEN }}
+      #pypi-token: ${{ secrets.PYPI_TOKEN }}
+  publish:
+    needs: ci
+    if: needs.ci.outputs.should_publish == 'true'
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Download distribution artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.ci.outputs.dist_artifact }}
+          path: dist
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/
 ```

@@ -546,7 +546,10 @@ jobs:
   badges:
     name: Update badges
     runs-on: ubuntu-latest
-    needs: tests
+    needs:
+      - version
+      - tests
+      - decide
     if: ${{ always() }}
     permissions:
       contents: write
@@ -748,6 +751,22 @@ jobs:
               value=docs_value,
               default_color=docs_color,
           ).write_badge(badges_dir / "docs.svg", overwrite=True)
+
+          # --- PyPI badge ---
+          # Note: This badge reflects the version produced by this run.
+          # It does not guarantee that the upload to PyPI succeeded, as that happens in the caller workflow.
+          pypi_color = "lightgrey"
+          version = "${{ needs.version.outputs.current_version }}"
+          should_publish = "${{ needs.decide.outputs.should_publish }}"
+          
+          if should_publish == "true":
+              pypi_color = "blue"
+          
+          Badge(
+              label="pypi",
+              value=version,
+              default_color=pypi_color,
+          ).write_badge(badges_dir / "pypi.svg", overwrite=True)
           PY
 
       - name: Commit badge updates
