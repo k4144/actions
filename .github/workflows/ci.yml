@@ -14,7 +14,8 @@ jobs:
       package-name: "actions"
       publish-on: "main"
     secrets:
-      pypi-token: ${{ secrets.PYPI_TOKEN }}
+      pypi-token: None
+      # pypi-token: ${{ secrets.PYPI_TOKEN }}
 
   publish:
     needs: ci
