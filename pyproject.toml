@@ -17,6 +17,3 @@ dev = [
     "sphinx>=9.0.1",
 ]
 
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-#addopts = "--cov=actions --cov-report=term-missing --cov-branch"
