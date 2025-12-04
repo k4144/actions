@@ -21,3 +21,5 @@ dev = [
 testpaths = ["tests"]
 addopts = "--cov=ghtest --cov-report=term-missing --cov-branch"
 
+[tool.coverage.paths]
+source = ["src", "*/site-packages"]
