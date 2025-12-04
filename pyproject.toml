@@ -16,3 +16,8 @@ dev = [
     "ruff>=0.14.7",
     "sphinx>=9.0.1",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--cov=ghtest --cov-report=term-missing --cov-branch"
+
