@@ -7,5 +7,4 @@ def main():
     return os.environ["VERSION"]
 
 
-if __name__ == "__main__":
-    main()
+

@@ -322,7 +322,7 @@ jobs:
         run: |
           mkdir -p reports
           set +e
-          pytest --junitxml=reports/pytest-report.xml --cov-report=xml:reports/coverage.xml
+          pytest --junitxml=reports/pytest-report.xml --cov=$project_name --cov-report=xml:reports/coverage.xml
           status=$?
           set -e
           echo "$status" > reports/pytest.exit
