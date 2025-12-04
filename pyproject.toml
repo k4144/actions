@@ -21,5 +21,10 @@ dev = [
 testpaths = ["tests"]
 addopts = "--cov=ghtest --cov-report=term-missing --cov-branch"
 
+[tool.coverage.run]
+source = ["src"]
+branch = true
+disable_warnings = ["module-not-imported"]
+
 [tool.coverage.paths]
 source = ["src", "*/site-packages"]
