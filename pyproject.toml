@@ -20,11 +20,3 @@ dev = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "--cov=actions --cov-report=term-missing --cov-branch"
-
-[tool.coverage.run]
-source = ["src"]
-branch = true
-disable_warnings = ["module-not-imported"]
-
-[tool.coverage.paths]
-source = ["src", "*/site-packages"]
