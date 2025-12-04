@@ -19,4 +19,4 @@ dev = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "--cov=actions --cov-report=term-missing --cov-branch"
+#addopts = "--cov=actions --cov-report=term-missing --cov-branch"
